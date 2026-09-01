@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="matrix">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#00ff8c" />
+  <title>Security — KingBot V8.7 Platform | GIBSONFX TECH</title>
+  <meta name="description" content="KingBot V8.7 platform security: email verification, phone SMS OTP authentication, JWT sessions, bcrypt password hashing, Helmet, CORS, and rate limiting." />
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../css/theme.css" />
+  <script src="../js/config.js"></script>
+  <script src="../js/app.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <section class="section" style="padding-top:24px">
+      <div class="legal-doc">
+        <div class="eyebrow">// Security</div>
+        <h1>Platform Security</h1>
+        <p class="updated">Last updated: September 2025</p>
+
+        <p>Security is the foundation of the KingBot V8.7 platform. Every layer — from authentication to API communication to EA bridge connectivity — is designed with protection against unauthorized access, data breaches, and malicious activity.</p>
+
+        <h2>Authentication & Identity</h2>
+        <div class="security-grid" style="margin:16px 0 24px">
+          <div class="sec-card">
+            <div class="sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 8h16M8 4v4"/></svg></div>
+            <div><h4>Email Verification</h4><p>Every account requires email confirmation via a cryptographic token before activation. Unverified accounts cannot subscribe or connect EAs.</p></div>
+          </div>
+          <div class="sec-card">
+            <div class="sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg></div>
+            <div><h4>Phone SMS OTP</h4><p>Phone number verification using one-time passcodes sent via SMS. Provides a second identity factor and enables SMS-based trade alerts.</p></div>
+          </div>
+          <div class="sec-card">
+            <div class="sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div><h4>Bcrypt Password Hashing</h4><p>Passwords are never stored in plaintext. We use bcrypt with a work factor of 12, making brute-force attacks computationally infeasible.</p></div>
+          </div>
+          <div class="sec-card">
+            <div class="sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+            <div><h4>JWT Session Tokens</h4><p>Stateless JSON Web Tokens with expiration. No server-side session store means nothing to steal. Tokens are signed with a secret key.</p></div>
+          </div>
+        </div>
+
+        <h2>API & Infrastructure Security</h2>
+        <div class="security-grid" style="margin:16px 0 24px">
+          <div class="sec-card">
+            <div class="sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7v10l10 5 10-5V7z"/><path d="M2 7l10 5 10-5M12 22V12"/></svg></div>
+            <div><h4>Helmet Security Headers</h4><p>HTTP security headers including CSP, X-Frame-Options, X-Content-Type-Options, and HSTS protect against XSS, clickjacking, and MIME sniffing.</p></div>
+          </div>
+          <div class="sec-card">
+            <div class="sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg></div>
+            <div><h4>Rate Limiting</h4><p>API endpoints are rate-limited to prevent brute-force attacks, credential stuffing, and abuse. Auth endpoints have stricter limits.</p></div>
+          </div>
+          <div class="sec-card">
+            <div class="sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></div>
+            <div><h4>CORS Policy</h4><p>Strict Cross-Origin Resource Sharing configuration. Only the official KingBot frontend origin can make authenticated API requests.</p></div>
+          </div>
+          <div class="sec-card">
+            <div class="sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
+            <div><h4>TLS Encryption</h4><p>All communication between the frontend, backend, and EA bridge is encrypted in transit. No plaintext data ever crosses the network.</p></div>
+          </div>
+        </div>
+
+        <h2>EA Bridge Security</h2>
+        <p>The mobile EA bridge uses your license key as an authentication token. Every status update and command is validated against your active subscription. The bridge endpoint rejects requests with invalid, expired, or plan-mismatched license keys. No one can control your EA without both your account credentials and a valid license key.</p>
+
+        <h2>What You Should Do</h2>
+        <ul>
+          <li>Use a unique, strong password (12+ characters, mixed case, numbers, symbols)</li>
+          <li>Keep your email and phone number verified and up to date</li>
+          <li>Never share your license keys — they grant EA control</li>
+          <li>Review your activity log regularly in Profile settings</li>
+          <li>Report any suspicious activity immediately</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+  <script>KB.mountShell("security");</script>
+</body>
+</html>

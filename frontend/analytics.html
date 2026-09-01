@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="matrix">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#00ff8c" />
+  <title>Analytics — KingBot V8.7 Platform | GIBSONFX TECH</title>
+  <meta name="description" content="Live trading analytics for your KingBot V8.7 MICRO-FLIP EA: equity curve, win rate, profit factor, drawdown, daily P/L breakdown, and full trade history." />
+  <link rel="manifest" href="manifest/manifest.webmanifest" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/theme.css" />
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</head>
+<body>
+  <div class="wrap" id="app">
+    <section class="section" style="padding-top:24px">
+      <div class="sec-head">
+        <div class="eyebrow">// Analytics</div>
+        <h1>Trading Performance</h1>
+        <p>Real-time analytics powered by your EA bridge. Monitor equity, win rate, drawdown and every trade — all from your phone.</p>
+      </div>
+
+      <!-- Account selector -->
+      <div class="panel" style="margin-bottom:20px">
+        <div class="panel-head">
+          <h3>Select Account</h3>
+        </div>
+        <div id="acctSelector" class="accounts-list"></div>
+      </div>
+
+      <!-- No account -->
+      <div id="noAcct" class="empty-state panel panel-glow" style="display:none;text-align:center;max-width:520px;margin:0 auto">
+        <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 3 5-6"/></svg></div>
+        <h2>No analytics yet</h2>
+        <p class="text-dim">Connect an EA account from your dashboard to see live performance analytics.</p>
+        <a href="dashboard.html" class="btn btn-primary" style="margin-top:16px">Go to dashboard</a>
+      </div>
+
+      <div id="analyticsView" style="display:none">
+
+        <!-- Performance tiles -->
+        <div class="perf-grid" style="margin-bottom:20px" id="perfTiles"></div>
+
+        <!-- Charts row -->
+        <div class="analytics-grid" style="margin-bottom:20px">
+          <div class="panel chart-card">
+            <div class="panel-head"><h3>Equity Curve</h3><span class="text-dim" style="font-size:12px" id="eqRange">—</span></div>
+            <canvas id="equityChart" width="460" height="240"></canvas>
+          </div>
+          <div class="panel chart-card">
+            <div class="panel-head"><h3>Drawdown</h3><span class="text-dim" style="font-size:12px" id="ddRange">—</span></div>
+            <canvas id="drawdownChart" width="460" height="240"></canvas>
+          </div>
+        </div>
+
+        <!-- Daily P/L bar chart -->
+        <div class="panel chart-card" style="margin-bottom:20px">
+          <div class="panel-head"><h3>Daily P/L (last 14 sessions)</h3></div>
+          <div class="bar-chart" id="dailyBar"></div>
+        </div>
+
+        <!-- Trade history -->
+        <div class="panel">
+          <div class="panel-head"><h3>Recent Trades</h3><span class="text-dim" style="font-size:12px" id="tradeCount">—</span></div>
+          <div class="table-scroll">
+            <table class="trade-table" id="tradeTable">
+              <thead><tr><th>Time</th><th>Pair</th><th>Type</th><th>Volume</th><th>Entry</th><th>Exit</th><th>P/L</th></tr></thead>
+              <tbody id="tradeBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      if (!KB.requireAuth()) return;
+      KB.mountShell("analytics");
+
+      let accounts = [];
+      let selectedId = null;
+
+      async function init() {
+        try {
+          const res = await KB.api.get("/api/ea/accounts").catch(() => ({ accounts: [] }));
+          accounts = res.accounts || [];
+          renderSelector();
+          if (accounts.length === 0) {
+            document.getElementById("noAcct").style.display = "";
+            document.getElementById("analyticsView").style.display = "none";
+            return;
+          }
+          selectAccount(accounts[0].id);
+        } catch (e) {
+          KB.toast("Failed to load analytics: " + e.message, true);
+        }
+      }
+
+      function renderSelector() {
+        const el = document.getElementById("acctSelector");
+        if (accounts.length === 0) { el.innerHTML = ""; return; }
+        el.innerHTML = accounts.map((a) => `
+          <div class="account-row ${a.id === selectedId ? "selected" : ""}" data-id="${a.id}">
+            <div class="account-row-main">
+              <span class="account-nick">${KB.escapeHTML(a.nickname || a.login)}</span>
+              <span class="account-detail text-dim">${KB.escapeHTML(a.server)} · #${KB.escapeHTML(a.login)}</span>
+            </div>
+          </div>`).join("");
+        el.querySelectorAll(".account-row").forEach((r) => r.onclick = () => selectAccount(r.dataset.id));
+      }
+
+      async function selectAccount(id) {
+        selectedId = id;
+        renderSelector();
+        document.getElementById("noAcct").style.display = "none";
+        document.getElementById("analyticsView").style.display = "";
+        await loadData();
+      }
+
+      async function loadData() {
+        try {
+          const [statusRes, perfRes] = await Promise.all([
+            KB.api.get(`/api/ea/accounts/${selectedId}/status`),
+            KB.api.get(`/api/analytics/accounts/${selectedId}/performance`).catch(() => ({})),
+          ]);
+          const s = statusRes.status || statusRes;
+
+          // Performance tiles
+          const p = perfRes.performance || perfRes || {};
+          const tiles = [
+            { label: "Win Rate", val: KB.fmtPct(s.winRate || p.winRate), sub: `${s.totalTrades || p.totalTrades || 0} trades`, cls: (s.winRate || p.winRate || 0) >= 50 ? "good" : "" },
+            { label: "Profit Factor", val: (s.profitFactor || p.profitFactor || 0).toFixed(2), sub: s.profitFactor >= 1.5 ? "Healthy" : "Review risk", cls: (s.profitFactor || p.profitFactor || 0) >= 1.5 ? "good" : "" },
+            { label: "Expectancy", val: KB.fmtMoney(s.expectancy || p.expectancy || 0), sub: "per trade", cls: (s.expectancy || p.expectancy || 0) >= 0 ? "good" : "bad" },
+            { label: "Net Profit", val: KB.fmtMoney(s.netProfit || p.netProfit || 0), sub: "all-time", cls: (s.netProfit || p.netProfit || 0) >= 0 ? "good" : "bad" },
+            { label: "Max Drawdown", val: KB.fmtPct(s.maxDrawdown || p.maxDrawdown || 0), sub: "peak to trough", cls: (s.maxDrawdown || p.maxDrawdown || 0) < 15 ? "accent" : "bad" },
+            { label: "Best Day", val: KB.fmtMoney(s.bestDayPL || p.bestDayPL || 0), sub: "single session", cls: "accent" },
+          ];
+          document.getElementById("perfTiles").innerHTML = tiles.map((t) => `
+            <div class="perf-tile ${t.cls}">
+              <span class="perf-label">${t.label}</span>
+              <span class="perf-val">${t.val}</span>
+              <span class="perf-sub">${t.sub}</span>
+            </div>`).join("");
+
+          // Equity curve
+          drawEquity(s.equityCurve || []);
+          // Drawdown
+          drawDrawdown(s.equityCurve || []);
+          // Daily bar
+          drawDaily(s.dailyPL || s.trades || []);
+          // Trade table
+          renderTrades(s.trades || []);
+
+        } catch (e) {
+          KB.toast("Failed to load analytics data", true);
+        }
+      }
+
+      function drawEquity(curve) {
+        const canvas = document.getElementById("equityChart");
+        const ctx = canvas.getContext("2d");
+        const W = canvas.width, H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+        if (!curve || curve.length < 2) {
+          ctx.fillStyle = "#888"; ctx.font = "13px monospace"; ctx.textAlign = "center";
+          ctx.fillText("No equity data yet", W/2, H/2);
+          document.getElementById("eqRange").textContent = "—";
+          return;
+        }
+        const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#00ff8c";
+        const grid = getComputedStyle(document.documentElement).getPropertyValue("--border").trim() || "rgba(255,255,255,0.08)";
+        const vals = curve.map(p => p.equity);
+        const minV = Math.min(...vals), maxV = Math.max(...vals), range = maxV - minV || 1;
+        const pad = 20, x0 = pad, y0 = pad, x1 = W - pad, y1 = H - pad;
+        const stepX = (x1 - x0) / (curve.length - 1);
+        ctx.strokeStyle = grid; ctx.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) { const y = y0 + (y1-y0)*i/4; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke(); }
+        const grad = ctx.createLinearGradient(0, y0, 0, y1);
+        grad.addColorStop(0, accent + "40"); grad.addColorStop(1, accent + "00");
+        ctx.beginPath(); ctx.moveTo(x0, y1);
+        curve.forEach((p, i) => { const x = x0 + stepX*i; const y = y1 - ((p.equity - minV)/range)*(y1-y0); ctx.lineTo(x, y); });
+        ctx.lineTo(x1, y1); ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
+        ctx.beginPath();
+        curve.forEach((p, i) => { const x = x0 + stepX*i; const y = y1 - ((p.equity - minV)/range)*(y1-y0); if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+        ctx.strokeStyle = accent; ctx.lineWidth = 2; ctx.stroke();
+        document.getElementById("eqRange").textContent = `${KB.fmtMoney(minV)} → ${KB.fmtMoney(maxV)}`;
+      }
+
+      function drawDrawdown(curve) {
+        const canvas = document.getElementById("drawdownChart");
+        const ctx = canvas.getContext("2d");
+        const W = canvas.width, H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+        if (!curve || curve.length < 2) {
+          ctx.fillStyle = "#888"; ctx.font = "13px monospace"; ctx.textAlign = "center";
+          ctx.fillText("No drawdown data yet", W/2, H/2);
+          document.getElementById("ddRange").textContent = "—";
+          return;
+        }
+        const danger = getComputedStyle(document.documentElement).getPropertyValue("--danger").trim() || "#ff3b5c";
+        const grid = getComputedStyle(document.documentElement).getPropertyValue("--border").trim() || "rgba(255,255,255,0.08)";
+        // compute drawdown series
+        let peak = curve[0].equity;
+        const dd = curve.map(p => { peak = Math.max(peak, p.equity); return peak > 0 ? ((p.equity - peak) / peak) * 100 : 0; });
+        const minDD = Math.min(...dd), range = Math.abs(minDD) || 1;
+        const pad = 20, x0 = pad, y0 = pad, x1 = W - pad, y1 = H - pad;
+        const stepX = (x1 - x0) / (dd.length - 1);
+        ctx.strokeStyle = grid; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y0); ctx.stroke();
+        const grad = ctx.createLinearGradient(0, y0, 0, y1);
+        grad.addColorStop(0, danger + "00"); grad.addColorStop(1, danger + "55");
+        ctx.beginPath(); ctx.moveTo(x0, y0);
+        dd.forEach((v, i) => { const x = x0 + stepX*i; const y = y0 - (v / range) * (y1 - y0) * -1 + (y1 - y0); ctx.lineTo(x, y); });
+        ctx.lineTo(x1, y0); ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
+        ctx.beginPath();
+        dd.forEach((v, i) => { const x = x0 + stepX*i; const y = y0 - (v / range) * (y1 - y0) * -1 + (y1 - y0); if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+        ctx.strokeStyle = danger; ctx.lineWidth = 2; ctx.stroke();
+        document.getElementById("ddRange").textContent = `Max DD: ${minDD.toFixed(1)}%`;
+      }
+
+      function drawDaily(daily) {
+        const el = document.getElementById("dailyBar");
+        if (!daily || daily.length === 0) { el.innerHTML = '<span class="text-dim" style="font-size:13px">No daily data yet</span>'; return; }
+        const data = daily.slice(-14);
+        const maxAbs = Math.max(...data.map(d => Math.abs(d.pl || d.profit || 0)), 1);
+        el.innerHTML = data.map(d => {
+          const pl = d.pl || d.profit || 0;
+          const h = (Math.abs(pl) / maxAbs) * 100;
+          return `<div class="bar ${pl < 0 ? "neg" : ""}" style="height:${h}%" title="${KB.fmtMoney(pl)}"></div>`;
+        }).join("");
+      }
+
+      function renderTrades(trades) {
+        const body = document.getElementById("tradeBody");
+        document.getElementById("tradeCount").textContent = `${trades.length} trades`;
+        if (trades.length === 0) {
+          body.innerHTML = '<tr><td colspan="7" class="text-dim" style="text-align:center;padding:24px">No trades yet — your EA will populate this table as it executes.</td></tr>';
+          return;
+        }
+        body.innerHTML = trades.slice(0, 20).map(t => {
+          const pl = t.profitLoss || t.pl || 0;
+          const cls = pl >= 0 ? "pos" : "neg";
+          return `<tr>
+            <td class="text-dim">${KB.fmtTime(t.time || t.timestamp)}</td>
+            <td class="mono">${KB.escapeHTML(t.symbol || t.pair || "—")}</td>
+            <td>${KB.escapeHTML(t.type || t.side || "—")}</td>
+            <td class="mono">${(t.volume || t.lots || 0).toFixed(2)}</td>
+            <td class="mono">${(t.entryPrice || t.openPrice || 0).toFixed(5)}</td>
+            <td class="mono">${(t.exitPrice || t.closePrice || 0).toFixed(5)}</td>
+            <td class="mono ${cls}">${KB.fmtMoney(pl)}</td>
+          </tr>`;
+        }).join("");
+      }
+
+      // Auto refresh
+      setInterval(() => { if (selectedId) loadData(); }, 20000);
+      init();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="matrix">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#00ff8c" />
+  <title>Sign in — KingBot V8.7 Platform</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/theme.css" />
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-card panel panel-glow">
+      <div class="auth-head">
+        <div class="brand-logo" style="width:52px;height:52px;margin:0 auto 14px"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 L20 6 V14 C20 18 16 21 12 22 C8 21 4 18 4 14 V6 Z" stroke="#021" stroke-width="1.5"/><circle cx="12" cy="11" r="2.4" fill="#021"/></svg></div>
+        <h1>Welcome back</h1>
+        <p>Sign in to your KingBot dashboard</p>
+      </div>
+      <div id="alertBox"></div>
+      <form id="loginForm">
+        <div class="field"><label>Email</label><input name="email" type="email" placeholder="you@email.com" autocomplete="email" required /></div>
+        <div class="field"><label>Password</label><input name="password" type="password" placeholder="••••••••" autocomplete="current-password" required /></div>
+        <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Sign in →</button>
+      </form>
+      <div class="auth-foot">No account? <a href="signup.html">Get started</a></div>
+    </div>
+  </div>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    KB.initTheme();
+    document.body.insertAdjacentHTML("afterbegin", `<nav class="nav"><div class="wrap nav-inner"><a href="index.html" class="brand"><div class="brand-logo"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 L20 6 V14 C20 18 16 21 12 22 C8 21 4 18 4 14 V6 Z" stroke="#021" stroke-width="1.5"/><circle cx="12" cy="11" r="2.4" fill="#021"/></svg></div><div><div class="brand-name">KING<span>BOT</span></div><div class="brand-sub">V8.7 · GIBSONFX</div></div></a><div class="nav-actions" style="margin-left:auto"><button class="theme-toggle" id="themeCycleBtn" title="Switch theme">◐</button><a href="signup.html" class="btn btn-primary btn-sm">Get started</a></div></div></nav>`);
+    document.getElementById("themeCycleBtn").onclick = () => { const c = localStorage.getItem("kingbot_theme")||"matrix"; const n = KB.THEMES[(KB.THEMES.indexOf(c)+1)%KB.THEMES.length]; KB.applyTheme(n); KB.toast("Theme: "+KB.THEME_META[n].name); };
+    if (KB.isLoggedIn()) window.location.href = "dashboard.html";
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("loginBtn");
+      const f = e.target;
+      btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Signing in…';
+      try {
+        const r = await KB.api.post("/api/auth/login", { email: f.email.value.trim(), password: f.password.value });
+        KB.setSession(r.token, r.user);
+        KB.toast("Signed in ✓");
+        setTimeout(() => (window.location.href = "dashboard.html"), 600);
+      } catch (err) {
+        document.getElementById("alertBox").innerHTML = `<div class="alert alert-err">${KB.escapeHTML(err.message)}</div>`;
+        if (err.code === "EMAIL_NOT_VERIFIED") {
+          document.getElementById("alertBox").innerHTML += `<div class="alert alert-ok" style="margin-top:10px"><a href="signup.html" style="color:var(--accent)">Verify your email first →</a></div>`;
+        }
+      } finally { btn.disabled = false; btn.textContent = "Sign in →"; }
+    });
+  </script>
+</body>
+</html>

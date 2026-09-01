@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="matrix">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#00ff8c" />
+  <title>Sign up — KingBot V8.7 Platform</title>
+  <link rel="manifest" href="manifest/manifest.webmanifest" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/theme.css" />
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-card panel panel-glow">
+      <div class="auth-head">
+        <div class="brand-logo" style="width:52px;height:52px;margin:0 auto 14px"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 L20 6 V14 C20 18 16 21 12 22 C8 21 4 18 4 14 V6 Z" stroke="#021" stroke-width="1.5" fill="rgba(2,17,10,0.3)"/><circle cx="12" cy="11" r="2.4" fill="#021"/></svg></div>
+        <h1>Create your account</h1>
+        <p>Email + phone verification · bank-grade security</p>
+      </div>
+      <div id="alertBox"></div>
+
+      <!-- Step 1: credentials -->
+      <form id="signupForm">
+        <div class="field"><label>Display name</label><input name="displayName" placeholder="TraderX" autocomplete="name" /></div>
+        <div class="field"><label>Email</label><input name="email" type="email" placeholder="you@email.com" autocomplete="email" required /></div>
+        <div class="field"><label>Password <span class="text-mute">(min 8 chars)</span></label><input name="password" type="password" placeholder="••••••••" autocomplete="new-password" required minlength="8" /></div>
+        <div class="field"><label>Phone <span class="text-mute">(international, + country code)</span></label><input name="phone" type="tel" placeholder="+12025551234" autocomplete="tel" required /></div>
+        <button type="submit" class="btn btn-primary btn-block" id="signupBtn">Create account →</button>
+      </form>
+
+      <!-- Step 2: verify -->
+      <div id="verifyStep" class="hidden">
+        <div class="alert alert-ok" id="verifyMsg"></div>
+        <div class="field"><label>Email verification token</label><input id="emailToken" placeholder="Paste token from email link" /></div>
+        <button class="btn btn-ghost btn-block btn-sm mb-2" id="verifyEmailBtn">Verify email</button>
+        <div class="field"><label>Phone OTP code <span class="text-mute">(6 digits)</span></label><input id="otpInput" class="otp-input" inputmode="numeric" maxlength="6" placeholder="------" /></div>
+        <button class="btn btn-primary btn-block" id="verifyOtpBtn">Verify phone →</button>
+        <button class="btn btn-ghost btn-block btn-sm mt-2" id="resendBtn">Resend verification</button>
+      </div>
+
+      <div class="auth-foot">Already have an account? <a href="login.html">Sign in</a></div>
+    </div>
+  </div>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    KB.initTheme();
+    document.body.insertAdjacentHTML("afterbegin", `<nav class="nav"><div class="wrap nav-inner"><a href="index.html" class="brand"><div class="brand-logo"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 L20 6 V14 C20 18 16 21 12 22 C8 21 4 18 4 14 V6 Z" stroke="#021" stroke-width="1.5"/><circle cx="12" cy="11" r="2.4" fill="#021"/></svg></div><div><div class="brand-name">KING<span>BOT</span></div><div class="brand-sub">V8.7 · GIBSONFX</div></div></a><div class="nav-actions" style="margin-left:auto"><button class="theme-toggle" id="themeCycleBtn" title="Switch theme">◐</button><a href="login.html" class="btn btn-ghost btn-sm">Sign in</a></div></div></nav>`);
+    document.getElementById("themeCycleBtn").onclick = () => { const c = localStorage.getItem("kingbot_theme")||"matrix"; const n = KB.THEMES[(KB.THEMES.indexOf(c)+1)%KB.THEMES.length]; KB.applyTheme(n); KB.toast("Theme: "+KB.THEME_META[n].name); };
+
+    const $ = (id) => document.getElementById(id);
+    let signupEmail = "";
+
+    $("signupForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = $("signupBtn");
+      const f = e.target;
+      const body = { displayName: f.displayName.value.trim(), email: f.email.value.trim(), password: f.password.value, phone: f.phone.value.trim() };
+      btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Creating…';
+      $("alertBox").innerHTML = "";
+      try {
+        const r = await KB.api.post("/api/auth/signup", body);
+        signupEmail = body.email;
+        $("signupForm").classList.add("hidden");
+        $("verifyStep").classList.remove("hidden");
+        $("verifyMsg").textContent = "Account created! We sent a verification link to your email and an OTP to your phone. (In dev mode, check the backend console for both.) Enter them below.";
+        KB.toast("Account created — verify email + phone");
+      } catch (err) {
+        $("alertBox").innerHTML = `<div class="alert alert-err">${KB.escapeHTML(err.message)}</div>`;
+      } finally {
+        btn.disabled = false; btn.textContent = "Create account →";
+      }
+    });
+
+    $("verifyEmailBtn").addEventListener("click", async () => {
+      const token = $("emailToken").value.trim();
+      if (!token) return KB.toast("Paste the email token", true);
+      try {
+        await KB.api.get(`/api/auth/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(signupEmail)}`);
+        KB.toast("Email verified ✓");
+        $("verifyEmailBtn").textContent = "Email verified ✓";
+        $("verifyEmailBtn").disabled = true;
+      } catch (e) { KB.toast(e.message, true); }
+    });
+
+    $("verifyOtpBtn").addEventListener("click", async () => {
+      const otp = $("otpInput").value.trim();
+      if (!otp) return KB.toast("Enter the OTP code", true);
+      try {
+        await KB.api.post("/api/auth/verify-otp", { email: signupEmail, otp });
+        KB.toast("Phone verified ✓ — signing you in…");
+        // auto-login
+        const f = document.querySelector("#signupForm");
+        const login = await KB.api.post("/api/auth/login", { email: signupEmail, password: f.password.value });
+        KB.setSession(login.token, login.user);
+        setTimeout(() => (window.location.href = "pricing.html"), 900);
+      } catch (e) { KB.toast(e.message, true); }
+    });
+
+    $("resendBtn").addEventListener("click", async () => {
+      try { await KB.api.post("/api/auth/resend-verification", { email: signupEmail }); KB.toast("Verification resent"); }
+      catch (e) { KB.toast(e.message, true); }
+    });
+  </script>
+</body>
+</html>

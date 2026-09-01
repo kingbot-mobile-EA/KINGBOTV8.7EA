@@ -1,0 +1,37 @@
+{
+  "name": "KingBot V8.7 — MICRO-FLIP EA Platform",
+  "short_name": "KingBot V8.7",
+  "description": "High-tech mobile platform for the KingBot V8.7 MICRO-FLIP MetaTrader 5 EA. Connect, monitor, and control from your phone — no PC required.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#02110a",
+  "theme_color": "#00ff8c",
+  "categories": ["finance", "productivity", "business"],
+  "icons": [
+    {
+      "src": "assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    { "name": "Dashboard", "url": "/dashboard.html", "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }] },
+    { "name": "Pricing", "url": "/pricing.html", "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }] },
+    { "name": "Analytics", "url": "/analytics.html", "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }] }
+  ]
+}

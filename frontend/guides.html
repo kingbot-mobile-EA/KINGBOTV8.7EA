@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="matrix">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#00ff8c" />
+  <title>Guides — KingBot V8.7 Platform | GIBSONFX TECH</title>
+  <meta name="description" content="Post-subscription guidance documents: setup guides, strategy manuals, broker configuration, risk management, and troubleshooting for the KingBot V8.7 MICRO-FLIP EA." />
+  <link rel="manifest" href="manifest/manifest.webmanifest" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/theme.css" />
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</head>
+<body>
+  <div class="wrap" id="app">
+    <section class="section" style="padding-top:24px">
+      <div class="sec-head">
+        <div class="eyebrow">// Guidance Documents</div>
+        <h1>KingBot V8.7 Knowledge Base</h1>
+        <p id="guideIntro">Comprehensive guides unlocked after subscription. From first setup to advanced risk management — everything you need to run your EA profitably from your phone.</p>
+      </div>
+
+      <!-- Not subscribed -->
+      <div id="noSubGate" class="empty-state panel panel-glow" style="display:none;text-align:center;max-width:560px;margin:0 auto">
+        <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <h2>Guides unlock with subscription</h2>
+        <p class="text-dim">Subscribe to access the full KingBot V8.7 guidance library — setup manuals, strategy guides, broker configs, and risk management protocols.</p>
+        <a href="pricing.html" class="btn btn-primary" style="margin-top:16px">View pricing</a>
+      </div>
+
+      <!-- Guide index -->
+      <div id="guideIndex" style="display:none">
+        <div class="panel" style="margin-bottom:20px">
+          <div class="panel-head"><h3>Available Documents</h3><span class="text-dim" style="font-size:12px" id="planBadge"></span></div>
+          <ul class="doc-list" id="docList"></ul>
+        </div>
+      </div>
+
+      <!-- Guide content -->
+      <div id="guideContent" style="display:none">
+        <div class="guide-doc">
+          <div class="doc-nav">
+            <a href="guides.html" class="btn btn-ghost btn-sm">← All guides</a>
+          </div>
+          <div id="docBody"></div>
+        </div>
+      </div>
+
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      KB.mountShell("guides");
+
+      let userPlan = null;
+      const docs = [
+        { id: "getting-started", title: "Getting Started — Mobile Setup", tier: "BASIC", icon: "📱", locked: false },
+        { id: "broker-config", title: "Broker Configuration Guide", tier: "BASIC", icon: "🏦", locked: false },
+        { id: "profile-a-guide", title: "Profile A — $20 Micro Flip Setup", tier: "BASIC", icon: "A", locked: false },
+        { id: "profile-b-guide", title: "Profile B — $100-500 Steady Builder", tier: "PRO", icon: "B", locked: true },
+        { id: "smc-strategy", title: "SMC Sniper Strategy Manual", tier: "PRO", icon: "🎯", locked: true },
+        { id: "profile-c-guide", title: "Profile C — $1000+ Aggressive Growth", tier: "ELITE", icon: "C", locked: true },
+        { id: "risk-management", title: "10-Layer Risk Management Protocol", tier: "PRO", icon: "🛡", locked: true },
+        { id: "profile-d-guide", title: "Profile D — Flip Sniper Setup", tier: "ELITE", icon: "D", locked: true },
+        { id: "profile-e-guide", title: "Profile E — Extreme / Gambler Protocol", tier: "QUANTUM", icon: "E", locked: true },
+        { id: "troubleshooting", title: "Troubleshooting & FAQ", tier: "BASIC", icon: "🔧", locked: false },
+        { id: "mobile-bridge", title: "EA Mobile Bridge — No PC Setup", tier: "BASIC", icon: "🔗", locked: false },
+      ];
+
+      const docContent = {
+        "getting-started": {
+          title: "Getting Started — Mobile Setup",
+          body: `<h2>Welcome to KingBot V8.7</h2>
+<p>You're about to run a professional MetaTrader 5 Expert Advisor entirely from your phone. No PC, no Windows, no terminal installation. This guide walks you through the first 15 minutes.</p>
+<h3>Prerequisites</h3>
+<ul><li>An active KingBot subscription (BASIC or higher)</li><li>A MetaTrader 5 account with a supported broker</li><li>Your license key (found in Profile → Subscription)</li><li>The KingBot V8.7 EA installed on your broker's hosted MT5 terminal</li></ul>
+<h3>Step 1 — Connect your account</h3>
+<p>Navigate to <strong>Dashboard</strong> and click <strong>+ Connect new</strong>. Enter your broker server (e.g. ICMarkets-Demo), your MT5 login number, a nickname for easy reference, and your license key. Select the strategy profile appropriate for your account size.</p>
+<h3>Step 2 — Choose a profile</h3>
+<p>For accounts under $100, select <strong>Profile A (Micro Flip)</strong>. This uses 0.01 lots on EURUSD with conservative risk settings — the safest starting point.</p>
+<h3>Step 3 — Monitor</h3>
+<p>Once connected, your dashboard shows live balance, equity, floating P/L, win rate, and an equity curve chart. The EA will begin trading automatically based on your selected profile.</p>
+<h3>Step 4 — Adjust settings</h3>
+<p>From the dashboard you can pause/resume the EA and view current settings. For advanced configuration, use the Settings panel on your EA terminal.</p>`
+        },
+        "broker-config": {
+          title: "Broker Configuration Guide",
+          body: `<h2>Choosing the Right Broker</h2>
+<p>KingBot V8.7 works best with brokers offering tight spreads, low commissions, and fast execution. The EA includes a spread filter that rejects trades when spreads exceed your configured maximum.</p>
+<h3>Recommended Brokers</h3>
+<ul><li><strong>IC Markets</strong> — Raw spread, excellent for scalping</li><li><strong>Pepperstone</strong> — Low latency, good for micro-flip</li><li><strong>FTMO</strong> — Prop firm compatible (check their EA rules)</li><li><strong>Exness</strong> — Good for small accounts, variable leverage</li></ul>
+<h3>Account Types</h3>
+<p>Use a <strong>Raw/ECN</strong> account type for the tightest spreads. Standard accounts work but spreads may trigger the filter more often. Ensure your account supports micro-lots (0.01).</p>
+<h3>Leverage</h3>
+<p>For Profile A ($20 accounts), use 1:500 leverage. For larger accounts, 1:100 to 1:200 is sufficient. The EA's risk management is independent of leverage — it sizes lots based on your balance and risk profile.</p>
+<h3>VPS / Hosted Terminal</h3>
+<p>The EA runs on your broker's hosted MT5 terminal (or your own VPS). The KingBot mobile bridge connects to it over HTTP — you control everything from your phone without needing to keep a PC running.</p>`
+        },
+        "profile-a-guide": {
+          title: "Profile A — $20 Micro Flip Setup",
+          body: `<h2>Profile A: Micro Flip Starter</h2>
+<p>This is the entry-level profile designed specifically for small accounts ($20–$100). It uses the MICRO_FLIP trading mode with the most conservative risk settings.</p>
+<h3>Key Parameters</h3>
+<ul><li><strong>Trading mode:</strong> MODE_MICRO_FLIP</li><li><strong>Symbol:</strong> EURUSD only</li><li><strong>Timeframe:</strong> M5</li><li><strong>Lot size:</strong> Fixed 0.01</li><li><strong>Risk profile:</strong> Conservative</li><li><strong>Take profit:</strong> 5–10 pips</li><li><strong>Stop loss:</strong> 8–15 pips</li><li><strong>Max spread:</strong> 15 points</li><li><strong>Max drawdown:</strong> 20%</li></ul>
+<h3>Why EURUSD?</h3>
+<p>EURUSD has the tightest spreads and most predictable behavior on M5. It's the best pair for micro-flipping with small accounts — low volatility means fewer blow-up scenarios.</p>
+<h3>Expected Behavior</h3>
+<p>The EA will open small positions with tight SL/TP, aiming for many small wins. With the 10-layer protection active, it will pause trading if conditions deteriorate. Expect 5–20 trades per day depending on market conditions.</p>
+<h3>Growth Target</h3>
+<p>Profile A targets steady, compounding growth. A $20 account growing at 2–5% per week can reach $100+ within 2–3 months, at which point you should consider upgrading to Profile B.</p>`
+        },
+        "mobile-bridge": {
+          title: "EA Mobile Bridge — No PC Setup",
+          body: `<h2>Connecting Without a PC</h2>
+<p>The KingBot mobile bridge is the core innovation: it lets you control your MT5 EA from your phone without ever installing MetaTrader on a Windows machine.</p>
+<h3>How It Works</h3>
+<p>Your EA runs on a hosted MT5 terminal (either your broker's free VPS or a rented VPS). The EA includes a bridge module that periodically POSTs status updates — balance, equity, trades, settings — to the KingBot backend. Your phone app reads this data via the REST API and sends commands (pause, resume, settings updates) back through the same channel.</p>
+<h3>Setup Steps</h3>
+<ul><li>1. Install the KingBot V8.7 EA on your hosted MT5 terminal</li><li>2. In the EA inputs, set <strong>EA_BRIDGE_URL</strong> to your KingBot backend URL</li><li>3. Set <strong>EA_BRIDGE_TOKEN</strong> to your license key</li><li>4. Enable <strong>EA_BRIDGE_ENABLED = true</strong></li><li>5. The EA will begin syncing within 60 seconds</li></ul>
+<h3>Latency</h3>
+<p>Status updates sync every 15–30 seconds. Trade execution happens on the terminal in real-time — the bridge is for monitoring and control, not for trade routing. This means zero additional latency on your trades.</p>
+<h3>Security</h3>
+<p>All bridge communication is encrypted with your license key. The backend validates every request against your subscription. No one can control your EA without your credentials and an active license.</p>`
+        },
+        "troubleshooting": {
+          title: "Troubleshooting & FAQ",
+          body: `<h2>Common Issues</h2>
+<h3>EA not syncing to my phone</h3>
+<p>Check that EA_BRIDGE_ENABLED is true and EA_BRIDGE_URL points to the correct backend URL. Verify your license key is entered correctly. The EA logs bridge status — check the Experts tab in MT5.</p>
+<h3>"Spread too high" messages</h3>
+<p>This is the spread filter working correctly. Either lower your MaxSpread setting or switch to a Raw/ECN account type with tighter spreads.</p>
+<h3>EA stopped trading</h3>
+<p>Check if a protection layer triggered: consecutive-loss pause, max drawdown stop, or the H1 trend filter blocking counter-trend setups. Review the EA dashboard on your terminal for the specific reason.</p>
+<h3>Losses exceeding expectations</h3>
+<p>Verify your risk profile matches your account size. Profile A should use Conservative risk. If you changed to Aggressive on a small account, switch back. Review the 10-layer protection settings.</p>
+<h3>Can't connect my account</h3>
+<p>Ensure your license key is valid and matches your subscription tier. Check that you haven't exceeded the account limit for your plan (BASIC: 1, PRO: 3, ELITE: 10, QUANTUM: unlimited).</p>`
+        },
+        "smc-strategy": {
+          title: "SMC Sniper Strategy Manual",
+          body: `<h2>Smart Money Concepts — Sniper Mode</h2>
+<p>The SMC Sniper strategy identifies institutional order flow using three core concepts: Order Blocks, Fair Value Gaps, and Liquidity Sweeps.</p>
+<h3>Order Blocks</h3>
+<p>An order block is the last opposing candle before a strong directional move. The EA marks these zones and enters on retests, expecting price to react at these institutional levels.</p>
+<h3>Fair Value Gaps (FVG)</h3>
+<p>A fair value gap is a three-candle imbalance where the middle candle's range doesn't overlap with either neighbor. Price tends to return to fill these gaps, providing high-probability entry zones.</p>
+<h3>Liquidity Sweeps</h3>
+<p>The EA detects when price spikes above/below a key level (stop hunt) and immediately reverses. This is a classic institutional pattern — the sweep triggers retail stop-losses before the real move.</p>
+<h3>Confluence Requirement</h3>
+<p>The confluence filter requires at least 2 of these 3 signals to align before entering a trade. This dramatically reduces false signals and is one of the 10 protection layers.</p>`
+        },
+        "risk-management": {
+          title: "10-Layer Risk Management Protocol",
+          body: `<h2>The 10-Layer Blow-Up Protection System</h2>
+<p>KingBot V8.7's defining feature is its multi-layered protection that prevents catastrophic account loss. Every layer operates independently and can halt trading before damage compounds.</p>
+<h3>1. Confluence Filter</h3><p>Requires 2+ signal confirmations before any entry. No single-signal trades.</p>
+<h3>2. H1 Trend Filter</h3><p>Blocks M5/M15 trades that go against the H1 trend direction. Prevents fighting the market.</p>
+<h3>3. ATR Volatility Floor</h3><p>Skips dead markets where there's insufficient movement to profit. Only trades when ATR exceeds the minimum threshold.</p>
+<h3>4. Spread Filter</h3><p>Rejects entries when the current spread exceeds maxSpread. Protects against slippage eating profits.</p>
+<h3>5. SL ≤ TP Enforcement</h3><p>Guarantees every trade has a risk-reward ratio of at least 1:1. Never risks more than the potential reward.</p>
+<h3>6. Profit-Lock Engine</h3><p>Locks partial profits at configured thresholds, securing gains even if the trade eventually reverses.</p>
+<h3>7. Anti-Blowup Loss Reduction</h3><p>Automatically shrinks lot size after consecutive losing trades, reducing exposure during losing streaks.</p>
+<h3>8. Consecutive-Loss Pause</h3><p>Pauses trading entirely after N consecutive losses (configurable). Prevents revenge trading and tilt.</p>
+<h3>9. Max Drawdown Hard Stop</h3><p>Closes all open positions and halts trading when drawdown hits the maxDrawdownPct limit. The ultimate safety net.</p>
+<h3>10. Max Lot Cap</h3><p>Prevents oversized positions regardless of balance or risk calculation. An absolute ceiling on position size.</p>`
+        },
+      };
+
+      async function init() {
+        const logged = KB.isLoggedIn();
+        if (logged) {
+          try {
+            const me = await KB.api.get("/api/subscriptions/me");
+            if (me.subscription && me.subscription.status === "active") {
+              userPlan = me.subscription.planId || "basic";
+              const planRank = { basic: 0, pro: 1, elite: 2, quantum: 3 };
+              const docRank = { BASIC: 0, PRO: 1, ELITE: 2, QUANTUM: 3 };
+              const userRank = planRank[userPlan] ?? 0;
+              // Unlock docs based on plan
+              docs.forEach(d => { d.locked = docRank[d.tier] > userRank; });
+              document.getElementById("planBadge").textContent = "Plan: " + userPlan.toUpperCase();
+            }
+          } catch {}
+        }
+        renderIndex();
+      }
+
+      function renderIndex() {
+        const list = document.getElementById("docList");
+        list.innerHTML = docs.map(d => `
+          <li>
+            <a href="#" data-doc="${d.id}" class="${d.locked ? "doc-locked" : ""}">
+              <span style="display:inline-flex;align-items:center;gap:8px"><span style="font-size:16px;width:24px;text-align:center">${d.icon}</span>${d.title}</span>
+              <span class="cat-tier" style="position:static;display:inline-block">${d.tier}</span>
+            </a>
+            ${d.locked ? '<span class="pill pill-warn">🔒 Locked</span>' : '<span class="pill pill-ok">Available</span>'}
+          </li>`).join("");
+        list.querySelectorAll("a[data-doc]").forEach(a => {
+          a.onclick = (e) => {
+            e.preventDefault();
+            const doc = docs.find(d => d.id === a.dataset.doc);
+            if (doc && !doc.locked) showDoc(doc);
+            else KB.toast("Upgrade your subscription to unlock this guide", true);
+          };
+        });
+        document.getElementById("guideIndex").style.display = "";
+      }
+
+      function showDoc(doc) {
+        const content = docContent[doc.id];
+        document.getElementById("guideIndex").style.display = "none";
+        document.getElementById("guideContent").style.display = "";
+        if (content) {
+          document.getElementById("docBody").innerHTML = `<h1>${content.title}</h1>${content.body}`;
+        } else {
+          document.getElementById("docBody").innerHTML = `<h1>${doc.title}</h1><p>This document is being prepared. Check back soon — the full guide will be available shortly.</p>`;
+        }
+        window.scrollTo(0, 0);
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

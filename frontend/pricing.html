@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="matrix">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#00ff8c" />
+  <title>Pricing — KingBot V8.7 Platform</title>
+  <meta name="description" content="KingBot V8.7 subscription tiers: BASIC $300/mo, PRO $550/mo, ELITE $1000/mo, QUANTUM $2500/mo. Each tier unlocks strategy categories, EA profiles and per-account license keys." />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/theme.css" />
+</head>
+<body>
+  <div class="wrap">
+    <section class="section">
+      <div class="sec-head">
+        <div class="eyebrow">// Pricing</div>
+        <h2>Choose your strategy tier</h2>
+        <p>Monthly subscriptions. Each tier unlocks EA strategy categories, setup profiles and per-account license keys. Cancel anytime.</p>
+      </div>
+      <div class="grid grid-4" id="pricingGrid" style="align-items:stretch"></div>
+      <div class="center mt-3 text-dim" style="font-size:13px">All plans include email + phone OTP security, mobile EA bridge, live analytics, AI support and the Matrix theme family.</div>
+    </section>
+
+    <!-- Comparison table -->
+    <section class="section-sm">
+      <div class="panel">
+        <h3 style="font-size:18px;margin-bottom:16px">Full comparison</h3>
+        <div class="tbl-wrap">
+          <table class="tbl" id="compareTable"></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Strategy category mapping -->
+    <section class="section-sm">
+      <div class="sec-head" style="margin-bottom:24px">
+        <div class="eyebrow">// Strategy catalog</div>
+        <h2>Strategy categories by tier</h2>
+      </div>
+      <div class="grid grid-2" id="strategyGrid"></div>
+    </section>
+
+    <div class="disclaimer" style="margin-bottom:30px"><strong>Risk disclosure:</strong> Trading forex involves substantial risk of loss. Small-account flipping, martingale, grid and extreme modes may cause rapid and significant losses. Past performance does not guarantee future results. KINGBOT is software and does not guarantee profits. Never trade with money you cannot afford to lose.</div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    KB.mountShell("pricing");
+    (async () => {
+      let plans = [], categories = [];
+      try {
+        const r = await KB.api.get("/api/subscriptions/plans");
+        plans = r.plans;
+      } catch (e) {
+        // static fallback so the page works even without backend
+        plans = [
+          { id:"basic", name:"BASIC", priceUSD:300, badge:null, tagline:"Micro-Account Flipper — Start small, flip smart", recommendedAccount:"$20 – $500",
+            features:["Micro-Flip engine ($20–$500)","2-of-3 confluence entries","H1 trend filter + ATR floor","Profit-Lock engine","Anti-blowup loss reduction","10-layer account protection","Mobile EA bridge (1 account)","Live analytics","Email + phone OTP auth","Basic guidance documents"] },
+          { id:"pro", name:"PRO", priceUSD:550, badge:"MOST POPULAR", tagline:"Steady Growth + Aggressive Flip — The balanced edge", recommendedAccount:"$100 – $5,000",
+            features:["Everything in BASIC","Profile B (Steady) + C (Aggressive)","Profile D (FLIP SNIPER)","3-of-3 confluence high win-rate","Adjustable R:R up to 2:1","Mobile bridge (up to 3 accounts)","Advanced analytics","AI assistant (Pro)","Priority email support","Full guidance pack"] },
+          { id:"elite", name:"ELITE", priceUSD:1000, badge:"HIGH PERFORMANCE", tagline:"High-Risk Engine + Full Strategy Arsenal", recommendedAccount:"$1,000 – $30,000",
+            features:["Everything in PRO","Profile E (EXTREME/GAMBLER)","Risk profiles: all 4","High-Risk recovery + pyramid","Grid + Martingale engines","Fibonacci entry gating","Mobile bridge (up to 10 accounts)","Real-time analytics + heatmap","AI assistant (Elite)","1:1 onboarding call"] },
+          { id:"quantum", name:"QUANTUM", priceUSD:2500, badge:"ENTERPRISE", tagline:"Institutional-Grade — All engines, no limits", recommendedAccount:"$5,000+",
+            features:["Everything in ELITE","RISK_GAMBLER profile","Unlimited connected accounts","Per-account license keys (anti-reverse)","Custom strategy presets","News + session filter full control","Dedicated AI copilot","White-glove support + account manager","API access","Priority EA updates"] },
+        ];
+      }
+      // fallback categories
+      categories = [
+        { name:"Micro-Flip Engine", bestFor:"$20 – $500", plans:["basic","pro","elite","quantum"] },
+        { name:"SMC Sniper", bestFor:"All accounts", plans:["basic","pro","elite","quantum"] },
+        { name:"Trend Scalper", bestFor:"All accounts", plans:["basic","pro","elite","quantum"] },
+        { name:"Momentum Scalper", bestFor:"All accounts", plans:["basic","pro","elite","quantum"] },
+        { name:"Flip Sniper", bestFor:"$1,000+", plans:["pro","elite","quantum"] },
+        { name:"High-Risk Engine", bestFor:"$1,000 – $30,000+", plans:["elite","quantum"] },
+        { name:"Grid & Martingale", bestFor:"$5,000+ (advanced)", plans:["elite","quantum"] },
+        { name:"Fibonacci Strategy", bestFor:"Supplementary", plans:["elite","quantum"] },
+      ];
+
+      // Pricing cards
+      const check = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5 9-11"/></svg>`;
+      const lock = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
+      document.getElementById("pricingGrid").innerHTML = plans.map(p => `
+        <div class="price-card ${p.badge ? "featured" : ""}">
+          ${p.badge ? `<div class="price-badge">${p.badge}</div>` : ""}
+          <div class="price-name">${p.name}</div>
+          <div class="price-amount"><span class="cur">$</span>${p.priceUSD}<span class="per">/mo</span></div>
+          <div class="price-tag">${p.tagline}</div>
+          <div class="text-mute mono" style="font-size:11px;margin-bottom:14px">RECOMMENDED: ${p.recommendedAccount || "Any"}</div>
+          <ul class="price-feats">${p.features.map(f => `<li>${check}<span>${KB.escapeHTML(f)}</span></li>`).join("")}</ul>
+          <button class="btn ${p.id==="pro"?"btn-primary":"btn-ghost"} btn-block" data-plan="${p.id}">Choose ${p.name}</button>
+        </div>`).join("");
+
+      document.querySelectorAll("[data-plan]").forEach(b => b.onclick = () => subscribe(b.dataset.plan));
+
+      // Comparison table
+      const rows = [
+        ["Price / month", plans.map(p => "$"+p.priceUSD)],
+        ["Recommended account", plans.map(p => p.recommendedAccount || "Any")],
+        ["Connected accounts", ["1","3","10","Unlimited"]],
+        ["EA profiles", ["A","A, B, C, D","A–E","A–E + Custom"]],
+        ["Micro-Flip engine", ["✓","✓","✓","✓"]],
+        ["Flip Sniper mode", ["—","✓","✓","✓"]],
+        ["High-Risk engine", ["—","—","✓","✓"]],
+        ["Grid & Martingale", ["—","—","✓","✓"]],
+        ["Fibonacci strategy", ["—","—","✓","✓"]],
+        ["RISK_GAMBLER profile", ["—","—","—","✓"]],
+        ["Custom strategy presets", ["—","—","—","✓"]],
+        ["AI assistant level", ["Basic","Pro","Elite","Quantum Copilot"]],
+        ["License key security", ["Standard","Standard","Standard","Anti-reverse"]],
+        ["Priority support", ["—","✓","✓","White-glove"]],
+      ];
+      document.getElementById("compareTable").innerHTML = `
+        <thead><tr><th>Feature</th>${plans.map(p => `<th class="center">${p.name}</th>`).join("")}</tr></thead>
+        <tbody>${rows.map(r => `<tr><td>${r[0]}</td>${r[1].map((v,i) => `<td class="center ${v==="—"?"text-mute":""} ${v==="✓"?"text-accent":""}">${v}</td>`).join("")}</tr>`).join("")}</tbody>`;
+
+      // Strategy categories
+      document.getElementById("strategyGrid").innerHTML = categories.map(c => `
+        <div class="feat">
+          <h3>${c.name}</h3>
+          <p class="text-dim" style="margin-bottom:10px">Best for: ${c.bestFor}</p>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">${c.plans.map(pid => `<span class="pill pill-accent">${pid.toUpperCase()}</span>`).join("")}</div>
+        </div>`).join("");
+    })();
+
+    async function subscribe(planId) {
+      if (!KB.isLoggedIn()) {
+        KB.toast("Sign up first, then choose your plan");
+        setTimeout(() => (window.location.href = "signup.html"), 600);
+        return;
+      }
+      if (!confirm("Subscribe to " + planId.toUpperCase() + "? (Mock checkout — no real charge in demo mode)")) return;
+      try {
+        const r = await KB.api.post("/api/subscriptions/subscribe", { planId });
+        KB.setSession(KB.api ? localStorage.getItem("kingbot_token") : null, { ...KB.getUser(), subscription: r.subscription });
+        localStorage.setItem("kingbot_user", JSON.stringify({ ...KB.getUser(), subscription: r.subscription }));
+        KB.toast("Subscribed! License keys + guides unlocked ✓");
+        setTimeout(() => (window.location.href = "dashboard.html"), 900);
+      } catch (e) { KB.toast(e.message, true); }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="matrix">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#00ff8c" />
+  <title>Strategies — KingBot V8.7 Platform | GIBSONFX TECH</title>
+  <meta name="description" content="Explore KingBot V8.7 strategy categories: SMC Sniper, Trend Scalper, Momentum, Micro-Flip, Grid, and more — mapped to subscription tiers and EA profiles." />
+  <link rel="manifest" href="manifest/manifest.webmanifest" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/theme.css" />
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</head>
+<body>
+  <div class="wrap" id="app">
+    <section class="section" style="padding-top:24px">
+      <div class="sec-head">
+        <div class="eyebrow">// Strategy Categories</div>
+        <h1>KingBot V8.7 Strategy Arsenal</h1>
+        <p>Nine trading modes. Three confluence engines. Five setup profiles. Each strategy category is mapped to a subscription tier and a pre-configured EA profile — so you deploy the right setup for your account size and risk appetite.</p>
+      </div>
+
+      <!-- Strategy categories -->
+      <div class="cat-grid" id="catGrid" style="margin-bottom:32px"></div>
+
+      <!-- EA profiles -->
+      <div class="sec-head" style="margin-top:20px">
+        <div class="eyebrow">// Setup Profiles</div>
+        <h2>EA Profiles A–E</h2>
+        <p>Pre-tuned parameter sets for every account size — from $20 micro-flip to $5000+ extreme.</p>
+      </div>
+      <div class="cat-grid" id="profileGrid" style="margin-bottom:32px"></div>
+
+      <!-- Trading modes -->
+      <div class="sec-head" style="margin-top:20px">
+        <div class="eyebrow">// Trading Modes</div>
+        <h2>Nine EA Modes</h2>
+        <p>The KingBot V8.7 MICRO-FLIP supports nine distinct trading modes selectable from your dashboard.</p>
+      </div>
+      <div class="panel">
+        <div class="table-scroll">
+          <table class="trade-table">
+            <thead><tr><th>Mode</th><th>Enum</th><th>Best For</th><th>Min Balance</th></tr></thead>
+            <tbody id="modeTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="panel panel-glow" style="margin-top:32px;text-align:center;padding:32px">
+        <h2>Ready to deploy?</h2>
+        <p class="text-dim" style="max-width:480px;margin:8px auto 20px">Subscribe to unlock the strategy categories and EA profiles for your tier. Get license keys, guidance documents, and live analytics.</p>
+        <a href="pricing.html" class="btn btn-primary">View pricing tiers</a>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      KB.mountShell("strategies");
+
+      // ---- Strategy categories (mapped from backend) ----
+      const categories = [
+        { id: "micro-flip", name: "Micro-Flip", tier: "BASIC", icon: "🔄", desc: "Ultra-small lot flips on EURUSD. Designed for $20–$100 accounts. Fast in-and-out with tight SL.", tags: ["EURUSD","M5","0.01 lot"], profiles: ["A","B"] },
+        { id: "smc-sniper", name: "SMC Sniper", tier: "PRO", icon: "🎯", desc: "Smart Money Concepts: order blocks, fair value gaps, and liquidity sweeps for precision entries.", tags: ["OB","FVG","Liquidity"], profiles: ["C","D"] },
+        { id: "trend-scalper", name: "Trend Scalper", tier: "PRO", icon: "📈", desc: "3-EMA system (8/21/50) with trend-confirmed scalps. Rides momentum on M5–M15.", tags: ["EMA","Trend","M15"], profiles: ["B","C"] },
+        { id: "momentum", name: "Momentum Scalper", tier: "PRO", icon: "⚡", desc: "RSI + Stochastic confluence for momentum bursts. Captoversions on overbought/oversold reversals.", tags: ["RSI","Stoch","M5"], profiles: ["B","C"] },
+        { id: "flip-sniper", name: "Flip Sniper", tier: "ELITE", icon: "🔫", desc: "Aggressive balance-flip strategy. Targets rapid account growth through high-frequency precision trades.", tags: ["Aggressive","High-freq"], profiles: ["D"] },
+        { id: "full-auto", name: "Full Auto", tier: "ELITE", icon: "🤖", desc: "Fully autonomous mode — all confluence engines active. The EA selects the best strategy per market condition.", tags: ["Auto","Hybrid","All-pairs"], profiles: ["C","E"] },
+        { id: "grid", name: "Grid System", tier: "ELITE", icon: "🔲", desc: "Grid-based recovery with configurable spacing and levels. Requires higher balance for safety.", tags: ["Grid","Recovery","$1000+"], profiles: ["C","E"] },
+        { id: "martingale", name: "Martingale (Controlled)", tier: "QUANTUM", icon: "🎰", desc: "Controlled martingale with strict lot caps and consecutive-loss circuit breakers. Extreme risk — QUANTUM only.", tags: ["Martingale","Capped","$5000+"], profiles: ["E"] },
+      ];
+
+      document.getElementById("catGrid").innerHTML = categories.map(c => `
+        <div class="cat-card locked-card">
+          <span class="cat-tier">${c.tier}</span>
+          <div class="cat-icon" style="font-size:18px">${c.icon}</div>
+          <h3>${c.name}</h3>
+          <p>${c.desc}</p>
+          <div class="cat-tags">${c.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+          <div style="margin-top:10px;font-size:11px;color:var(--text-dim)">Profiles: ${c.profiles.join(", ")}</div>
+        </div>`).join("");
+
+      // ---- EA Profiles A–E ----
+      const profiles = [
+        { id: "A", name: "Micro Flip Starter", bal: "$20–$100", mode: "MODE_MICRO_FLIP", desc: "EURUSD only, 0.01 lots, conservative risk. The entry point for small accounts. Tight SL, small TP, high frequency." },
+        { id: "B", name: "Steady Builder", bal: "$100–$500", mode: "MODE_SCALP_ONLY", desc: "EURUSD + GBPUSD, 0.01–0.05 lots, balanced risk. Trend-confirmed scalps with the 3-EMA engine." },
+        { id: "C", name: "Aggressive Growth", bal: "$1,000+", mode: "MODE_FULL_AUTO", desc: "Multi-pair, 0.05–0.20 lots, aggressive risk. Full confluence system with all engines active." },
+        { id: "D", name: "Flip Sniper", bal: "$2,000+", mode: "MODE_FLIP_SNIPER", desc: "Rapid balance-flip targeting. Higher frequency, tighter risk-reward, SMC-confirmed entries." },
+        { id: "E", name: "Extreme / Gambler", bal: "$5,000+", mode: "MODE_MARTINGALE", desc: "Controlled martingale with max lot caps and circuit breakers. Highest risk, highest potential reward." },
+      ];
+
+      document.getElementById("profileGrid").innerHTML = profiles.map(p => `
+        <div class="cat-card">
+          <div class="cat-icon" style="font-family:var(--font-mono);font-size:16px;font-weight:800">${p.id}</div>
+          <h3>${p.name}</h3>
+          <p>${p.desc}</p>
+          <div class="cat-tags">
+            <span class="tag">${p.bal}</span>
+          </div>
+          <span class="profile-mode">${p.mode}</span>
+        </div>`).join("");
+
+      // ---- Trading modes ----
+      const modes = [
+        ["Micro Flip", "MODE_MICRO_FLIP", "Small accounts, fast flips", "$20"],
+        ["Flip Sniper", "MODE_FLIP_SNIPER", "Aggressive balance flipping", "$2,000"],
+        ["Full Auto", "MODE_FULL_AUTO", "All engines, autonomous", "$1,000"],
+        ["SMC Only", "MODE_SMC_ONLY", "Order blocks & FVG only", "$500"],
+        ["Scalp Only", "MODE_SCALP_ONLY", "Trend-confirmed scalps", "$100"],
+        ["Momentum", "MODE_MOMENTUM", "RSI + Stochastic bursts", "$100"],
+        ["Hybrid SMC", "MODE_HYBRID_SMC", "SMC + trend + momentum", "$1,000"],
+        ["Grid", "MODE_GRID", "Grid recovery system", "$1,000"],
+        ["Martingale", "MODE_MARTINGALE", "Controlled martingale (capped)", "$5,000"],
+      ];
+
+      document.getElementById("modeTable").innerHTML = modes.map(m => `
+        <tr>
+          <td><strong>${m[0]}</strong></td>
+          <td class="mono">${m[1]}</td>
+          <td class="text-dim">${m[2]}</td>
+          <td class="mono">${m[3]}</td>
+        </tr>`).join("");
+    })();
+  </script>
+</body>
+</html>
