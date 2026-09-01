@@ -9,7 +9,7 @@ services:
     runtime: node
     plan: free # upgrade to 'starter' for production
     region: oregon # or frankfurt / singapore
-    rootDir: kingbot-platform/backend
+    rootDir: backend
     buildCommand: npm install
     startCommand: node src/server.js
     healthCheckPath: /health
