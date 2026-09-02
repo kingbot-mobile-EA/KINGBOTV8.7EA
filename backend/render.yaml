@@ -10,7 +10,7 @@ services:
     plan: free # upgrade to 'starter' for production
     region: oregon # or frankfurt / singapore
     rootDir: backend
-    buildCommand: npm install
+    buildCommand: npm ci
     startCommand: node src/server.js
     healthCheckPath: /health
     autoDeploy: true
@@ -21,6 +21,8 @@ services:
         generateValue: true # Render auto-generates a secret
       - key: CORS_ORIGIN
         sync: false # set to your GitHub Pages URL in the dashboard
+      - key: ALLOWED_IPS
+        value: "::1,127.0.0.1,74.220.48.0/24,74.220.56.0/24" # Render's IP ranges (Oregon + backup)
       - key: MOCK_EA
         value: "true" # set false when you connect a real MT5 bridge
       - key: PAYMENTS_ENABLED
