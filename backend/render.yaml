@@ -13,14 +13,18 @@ services:
     buildCommand: npm ci
     startCommand: node src/server.js
     healthCheckPath: /health
+    healthCheckInterval: 30
+    healthCheckTimeout: 5
     autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: "8080"
       - key: JWT_SECRET
         generateValue: true # Render auto-generates a secret
       - key: CORS_ORIGIN
-        sync: false # set to your GitHub Pages URL in the dashboard
+        sync: false # set to your GitHub Pages URL in the dashboard (e.g., https://username.github.io)
       - key: MOCK_EA
         value: "true" # set false when you connect a real MT5 bridge
       - key: PAYMENTS_ENABLED
