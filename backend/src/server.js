@@ -44,6 +44,7 @@ app.use("/api", apiLimiter);
 app.use("/api/auth", authLimiter);
 
 // ---- Health check (Render + uptime monitoring) ----
+// Note: health check is intentionally public to allow monitoring services (Render, Uptime, etc.)
 app.get("/health", async (_req, res) => {
   const users = await readCollection("users");
   res.json({
