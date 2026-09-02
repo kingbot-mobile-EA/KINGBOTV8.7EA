@@ -46,18 +46,35 @@ app.use("/api/auth", authLimiter);
 // ---- Health check (Render + uptime monitoring) ----
 // Note: health check is intentionally public to allow monitoring services (Render, Uptime, etc.)
 app.get("/health", async (_req, res) => {
-  const users = await readCollection("users");
-  res.json({
-    status: "ok",
-    service: "kingbot-platform-backend",
-    version: "8.7.0",
-    env: config.env,
-    users: users.length,
-    eaMock: config.ea.mock,
-    paymentsEnabled: config.payments.enabled,
-    aiProvider: config.ai.provider,
-    time: new Date().toISOString(),
-  });
+  try {
+    // Add timeout to prevent hanging on file operations
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Health check timeout")), 5000)
+    );
+
+    const usersPromise = readCollection("users");
+    const users = await Promise.race([usersPromise, timeoutPromise]);
+
+    res.json({
+      status: "ok",
+      service: "kingbot-platform-backend",
+      version: "8.7.0",
+      env: config.env,
+      users: users.length,
+      eaMock: config.ea.mock,
+      paymentsEnabled: config.payments.enabled,
+      aiProvider: config.ai.provider,
+      time: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error("[health check]", err);
+    res.status(503).json({
+      status: "degraded",
+      service: "kingbot-platform-backend",
+      version: "8.7.0",
+      error: err.message,
+    });
+  }
 });
 
 // ---- API routes ----
@@ -87,7 +104,7 @@ app.use((err, _req, res, _next) => {
 });
 
 const port = config.port;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log("\n╔══════════════════════════════════════════════════════════╗");
   console.log("║   KINGBOT V8.7 MICRO-FLIP PLATFORM — BACKEND             ║");
   console.log("║   Powered by GIBSONFX TECH  •  v8.7.0                    ║");
@@ -95,4 +112,19 @@ app.listen(port, () => {
   console.log(`▶ Listening on :${port}  (${config.env})`);
   console.log(`▶ EA bridge mock: ${config.ea.mock}  •  AI provider: ${config.ai.provider}`);
   console.log(`▶ Payments: ${config.payments.enabled ? "ENABLED" : "MOCK"}  •  Email: ${config.email.enabled ? "ENABLED" : "LOG"}  •  SMS: ${config.sms.enabled ? "ENABLED" : "LOG"}\n`);
+});
+
+// ---- Graceful shutdown for Render deployments ----
+process.on("SIGTERM", () => {
+  console.log("[shutdown] SIGTERM received, closing server gracefully...");
+  server.close(() => {
+    console.log("[shutdown] Server closed");
+    process.exit(0);
+  });
+
+  // Force exit after 10 seconds
+  setTimeout(() => {
+    console.error("[shutdown] Forced exit after 10s timeout");
+    process.exit(1);
+  }, 10000);
 });
